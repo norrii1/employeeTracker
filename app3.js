@@ -35,7 +35,9 @@
 //           viewEmployees()
 //           break
 //         case 'Add Employee':
-//           createEmployee()
+//           createEmployee(),
+//           managerId
+          
 //           break
 //         case 'Remove Employee':
 //           getManager()
@@ -47,12 +49,12 @@
 //           rolesId()
 //           break
 //         case 'Update Employee Role':
-//          managerId()
+//           managerId()
 //           break
 //         case 'Update Manager':
 //           break
-//         case 'View Roles': 
-//         viewRoles()
+//         case 'View Roles':
+//           viewRoles()
 //           break
 //         case 'EXIT':
 //           process.exit()
@@ -63,14 +65,14 @@
 // }
 
 // async function getDepartments() {
-//     const response = await new Promise((resolve, reject) => {
-//       db.query('SELECT * FROM department', (err, department) => {
-//         if(err) {reject(err)}
-//         resolve(department)
-//       })
+//   const response = await new Promise((resolve, reject) => {
+//     db.query('SELECT * FROM department', (err, department) => {
+//       if (err) { reject(err) }
+//       resolve(department)
 //     })
-//     return response
-//    }
+//   })
+//   return response
+// }
 // async function getRoles() {
 //   const response = await new Promise((resolve, reject) => {
 //     db.query('SELECT * FROM roles', (err, roles) => {
@@ -94,7 +96,7 @@
 // //     db.query('INSERT INTO employees (employees.first_name, employees.last_name, employees.roles_id, employees.manager_id)', (err, employees) => {
 // //       if (err) { reject(err) }
 // //       resolve(employees)
-    
+
 // //     db.query('SELECT employees.id, employees.first_name, employees.last_name, roles.title, department.department, roles.salary, department.manager FROM employees INNER JOIN roles ON roles_id = roles.id INNER JOIN department ON manager.id = department.id ', (err, employees, roles, department) => {
 // //       if (err) { reject(err) }
 // //       resolve(employees, roles, department)
@@ -131,37 +133,37 @@
 // // }
 
 
-// const viewDepartments = (action) => {
-//       getDepartments()
-      
-//         .then(department => {
-//           console.table(department)
-//        getRoles() 
-//        .then(employees =>{
-//        console.table(employees)
-//        contCheck()
-//        })
-//         .catch(err => {(console.log(err))})
-//   })
+// const viewDepartments = () => {
+//   getDepartments()
+
+//     .then(department => {
+//       console.table(department)
+//       getRoles()
+//         .then(employees => {
+//           console.table(employees)
+//           contCheck()
+//         })
+//         .catch(err => { (console.log(err)) })
+//     })
 // }
-//   const viewRoles = (action) => {
-//     getRoles()
+// const viewRoles = () => {
+//   getRoles()
 //     .then(roles => {
 //       console.table(roles)
 //       contCheck()
 //     })
 //     .catch(err => console.log(err))
-//   }
-// const viewEmployees = (action) => {
+// }
+// const viewEmployees = () => {
 //   getEmployees()
-//   .then((employees) => {
-//      console.table(employees)
-//     contCheck()
-//   })
-//   .catch((err) => { console.log(err) })
+//     .then((employees) => {
+//       console.table(employees)
+//       contCheck()
+//     })
+//     .catch((err) => { console.log(err) })
 
 // }
-// const managerId = () =>{
+// const managerId = () => {
 //   getDepartments()
 //     .then(department => {
 //       console.table(department)
@@ -174,14 +176,15 @@
 //           value: department.id
 //         }))
 //       })
-//       .then(({ manager_id }) => {
-//         this.manager_id = manager_id
-//         console.log(manager_id)
-//       })
+//         .then(({ manager_id }) => {
+//           this.manager_id = manager_id
+//           console.log(manager_id)
+//         })
+       
 //         .catch((err) => { console.log(err) })
 
 //     })
-    
+
 //     .catch((err) => { console.log(err) })
 // }
 // const rolesId = () => {
@@ -201,69 +204,49 @@
 //           this.roles_id = roles_id
 //           console.log(roles_id)
 //         })
+        
 //         .catch((err) => { console.log(err) })
 //     })
 //     .catch((err) => { console.log(err) })
 // }
 // const createEmployee = () => {
 //   prompt(newEmployee)
-//   .then(employee => {
-//   getDepartments()
-//     .then(department => {
-//       console.table(department)
-//       prompt({
-//         type: 'list',
-//         name: 'manager_id',
-//         message: 'Who is the Employee\'s manager ?',
-//         choices: department.map(department => ({
-//           name: department.manager,
-//           value: department.id
-//         }))
-//         .then(({ manager_id }) => {
-//           rolesId(manager_id)
-//           console.log(manager_id)
-//         })
-//       })
-//     })
-//     .catch((err) => { console.log(err) })
-//         .then(() => {
-//           getRoles()
-//             .then(roles => {
-//               console.table(roles)
-//               prompt({
-//                 type: 'list',
-//                 name: 'roles_id',
-//                 message: 'Employee\'s role : ',
-//                 choices: roles.map(roles => ({
-//                   name: roles.title,
-//                   value: roles.id
-//                 }))
-//               })
-//             })
-//             .catch((err) => { console.log(err) })
-//         })
-//               .catch((err) => { console.log(err) })
-//               .then(({first_name, last_name, manager_id, roles_id}) => {
-//                 const newEmployee = [{
-//                 first_name,
-//                 last_name ,
-//                 manager_id,
-//                 roles_id 
-//                 }]
-//                 console.log(first_name, last_name, roles_id, manager_id)
+//   // .then(({ newEmployee }) => {
+//   //   this.first_name = first_name
+//   //   this.last_name = last_name
+//   //   console.log(first_name)
+//   //   console.log(last_name)
+//   // })
+//   //   .catch((err) => { console.log(err) })
+//   .then(() => {
+    
+//       managerId( (manager_id)  => {
+//       this.manager_id = this.manager_id
+//       console.log(manager_id)
+//       return this
 
-                
-//                   db.query('INSERT INTO employees (employees.first_name, employees.last_name, employees.roles_id, employees.manager_id) VALUES ????', (newEmployee, err) => {
-//                     if (err) { reject(err) }
-//                   })      
-//                 contCheck()
-               
-//                 })
-//                 .catch((err) => { console.log(err) })
-//               })
-//             .catch((err) => { console.log(err) })
-              
-// }
+//     })
+    
+//   rolesId(( roles_id ) => {
+//     this.roles_id = roles_id
+    
+//  })
+
+
+//   })
+//     .catch((err) => { console.log(err) })
+
+
+
+        
+
+   
+
+  
+//   }
+    
+
+
 
 // const contCheck = () => {
 //   prompt({
@@ -278,18 +261,18 @@
 // const getManager = () => {
 //   getRoles()
 //     .then(roles => {
-//           console.table(roles)
-//           prompt({
-//             type: 'list',
-//             name: 'managerName',
-//             message: 'Employee\'s role : ',
-//             choices: roles.map(roles => ({
-//               name: roles.title,
-//               value: roles.id
-//             }))
+//       console.table(roles)
+//       prompt({
+//         type: 'list',
+//         name: 'managerName',
+//         message: 'Employee\'s role : ',
+//         choices: roles.map(roles => ({
+//           name: roles.title,
+//           value: roles.id
+//         }))
 //       })
 //       contCheck()
-//     })    
+//     })
 //     .catch((err) => { console.log(err) })
 // }
 // starter()

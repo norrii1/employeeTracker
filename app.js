@@ -4,7 +4,6 @@ const mysql = require('mysql2')
 const express = require('express')
 const { join } = require('path')
 const db = require('./db')
-const { manager_id } = require('./app3')
 
 require('console.table')
 
@@ -27,7 +26,7 @@ const starter = () => {
       type: 'list',
       name: 'start',
       message: 'Employee Tracker',
-      choices: ['View Employees', 'Add Employee', 'Remove Employee', 'Employees By Department', 'View Managers', 'Update Employee Role', 'Update Manager', 'View Roles', 'Add Role', 'EXIT']
+      choices: ['View Employees', 'Add Employee', 'Remove Employee', 'Employees By Department', 'Update Employee Role', 'View Roles', 'Add Role', 'EXIT']
     }
   ])
     .then(({ start }) => {
@@ -44,20 +43,16 @@ const starter = () => {
         case 'Employees By Department':
           employeesDepartment()
           break
-        case 'View Managers':
-          break
         case 'Update Employee Role':
-          break
-        case 'Update Manager':
-          upDate()
           break
         case 'View Roles':
           viewRoles()
           break
+          case 'Add Role':
+          break
         case 'EXIT':
           process.exit()
       }
-
     })
     .catch(err => console.log(err))
 }
@@ -91,16 +86,7 @@ async function getEmployee() {
 }
 async function getEmployees() {
   const response = await new Promise((resolve, reject) => {
-    db.query('SELECT employees.first_name, employees.last_name FROM employees INNER JOIN roles ON roles_id = roles.id INNER JOIN department ON department.id = manager_id  ', (err, employees, roles, department) => {
-      if (err) { reject(err) }
-      resolve(employees, roles, department)
-    })
-  })
-  return response
-}
-async function upDateManager() {
-  const response = await new Promise((resolve, reject) => {
-    db.query('SELECT employees.id, employees.first_name, employees.last_name, employees.manager_id  FROM employees INNER JOIN roles ON roles_id = roles.id INNER JOIN department ON manager_id = department.id  ', (err, employees, roles, department) => {
+    db.query('SELECT employees.id, employees.first_name, employees.last_name, roles.title, department.department, roles.salary FROM employees INNER JOIN roles ON roles_id = roles.id INNER JOIN department ON department.id = manager_id  ', (err, employees, roles, department) => {
       if (err) { reject(err) }
       resolve(employees, roles, department)
     })
@@ -109,32 +95,28 @@ async function upDateManager() {
 }
 async function employeeDepartment() {
   const response = await new Promise((resolve, reject) => {
-    db.query('SELECT employees.first_name, employees.last_name, roles.title, department.department, roles.salary FROM employees INNER JOIN roles ON roles_id = roles.id INNER JOIN department ON manager_id = department.id   ', (err, employees, roles, department) => {
+    db.query('SELECT employees.first_name, employees.last_name, department.department FROM employees INNER JOIN roles ON roles_id = roles.id INNER JOIN department ON manager_id = department.id   ', (err, employees, roles, department) => {
       if (err) { reject(err) }
       resolve(employees, roles, department)
     })
   })
   return response
 }
-// a
-// async function addEmployee () {
-//     const response = await new Promise((resolve, reject) => {
-//     db.query('INSERT INTO employees (employees.first_name, employees.last_name, employees.roles_id, employees.manager_id)', (err, employees) => {
-// Error Code: 1146. Table 'employeetracker_db.employeees' doesn't exist
 
-//       if (err) { reject(err) }
-//       resolve(employees)
+async function addEmployee () {
+    const response = await new Promise((resolve, reject) => {
+    db.query('INSERT INTO employees (employees.first_name, employees.last_name, employees.roles_id, employees.manager_id)', (err, employees) => {
+      if (err) { reject(err) }
+      resolve(employees)
 
-//     db.query('SELECT employees.id, employees.first_name, employees.last_name, roles.title, department.department, roles.salary, department.manager FROM employees INNER JOIN roles ON roles_id = roles.id INNER JOIN department ON manager.id = department.id ', (err, employees, roles, department) => {
-//       if (err) { reject(err) }
-//       resolve(employees, roles, department)
-//     })
-//   })
-// })
-//   return response
-// }
-
-
+    db.query('SELECT employees.id, employees.first_name, employees.last_name, roles.title, department.department, roles.salary, department.manager FROM employees INNER JOIN roles ON roles_id = roles.id INNER JOIN department ON manager.id = department.id ', (err, employees, roles, department) => {
+      if (err) { reject(err) }
+      resolve(employees, roles, department)
+    })
+  })
+})
+  return response
+}
 // async function addRole() {
 //   const response = await new Promise((resolve, reject) => {
 //     db.query(`INSERT INTO roles SET ?`, data, (err, fields) => {
@@ -159,7 +141,6 @@ async function employeeDepartment() {
 //   })
 //   return response
 // Error Code: 1452. Cannot add or update a child row: a foreign key constraint fails(`employeetracker_db`.`employees`, CONSTRAINT`employees_ibfk_1` FOREIGN KEY(`roles_id`) REFERENCES`roles`(`id`))
-
 // }
 
 const employeesDepartment = () => {
@@ -167,56 +148,10 @@ const employeesDepartment = () => {
     .then(employees => {
       console.table(employees)
       contCheck()
+    })
+    .catch(err => console.log(err))
+  }
 
-})
- .catch(err => { (console.log(err)) })
-}
-
-const viewDepartments = () => {
-  getEmployee()
-        .then(employees => {
-          prompt({
-            type: 'list',
-            name: 'employees_id',
-            message: 'Who is the Employee\'s manager ?',
-            choices: employees.map(employees => ({
-              name: employees.first_name,
-              value: employees.roles_id
-            }))
-          })
-            .then(({ employees_id  }) => {
-              this.employees_id = employees_id
-              console.log(employees_id )
-            })
-            .catch(err => { (console.log(err)) })
-
-        })
-        .catch(err => { (console.log(err)) })
-    }
-    const upDate= () => {
-      upDateManager()
-
-        .then(employees => {
-          console.table(employees)
-          prompt({
-            type: 'list',
-            name: 'employees_id',
-            message: 'Update Employee\'s Manager',
-            choices: employees.map(employees => ({
-              name: employees.first_name,
-              value: employees.manager_id
-            }))
-          })
-            .then(({ employees_id }) => {
-              this.employees_id = employees_id
-              console.log(employees_id)
-              contCheck()
-            })
-            .catch(err => { (console.log(err)) })
-
-        })
-        .catch(err => { (console.log(err)) })
-    }
 const viewRoles = () => {
   getRoles()
     .then(roles => {
@@ -225,6 +160,7 @@ const viewRoles = () => {
     })
     .catch(err => console.log(err))
 }
+
 const deleteEmployees = () => {
   getEmployee()
     .then(employees => {
@@ -242,18 +178,18 @@ const deleteEmployees = () => {
           console.log(employees_id)
           contCheck()
         })
-        .catch(err => { (console.log(err)) })
+        .catch(err => console.log(err))
     })
-    .catch(err => { (console.log(err)) })
+    .catch(err => console.log(err))
   }
 
 const viewEmployees = () => {
-      getEmployee()
-        .then(department => {
-          console.table(department)
-          contCheck()
-       })
-        .catch(err => {(console.log(err))})
+  getEmployees()
+  .then(department => {
+    console.table(department)
+    contCheck()
+  })
+    .catch(err => console.log(err))
  
 }
 const managerId = () => {
@@ -272,14 +208,34 @@ const managerId = () => {
         .then(({ manager_id }) => {
           this.manager_id = manager_id
           console.log(manager_id)
+          return manager_id
         })
-
-        .catch((err) => { console.log(err) })
-
-    })
-
-    .catch((err) => { console.log(err) })
+        .catch(err => console.log(err))
+      })
+    .catch(err => console.log(err))
 }
+const viewDepartments = () => {
+  getEmployee()
+  .then(employees => {
+    prompt({
+      type: 'list',
+      name: 'employees_id',
+      message: 'Who is the Employee\'s manager ?',
+      choices: employees.map(employees => ({
+         name: employees.first_name,
+          value: employees.id
+        }))
+      })
+      .then(({ employees_id  }) => {
+         this.employees_id = employees_id
+          console.log(employees_id )
+          rolesId()
+        })
+        .catch(err => console.log(err))
+        })
+        .catch(err => console.log(err))
+      }
+
 const rolesId = () => {
   getRoles()
     .then(roles => {
@@ -296,45 +252,26 @@ const rolesId = () => {
         .then(({ roles_id }) => {
           this.roles_id = roles_id
           console.log(roles_id)
+          contCheck()
+          return roles_id
         })
-
-        .catch((err) => { console.log(err) })
+        .catch(err => console.log(err))
     })
-    .catch((err) => { console.log(err) })
+    .catch(err => console.log(err))
 }
+
 const createEmployee = () => {
- 
-  // viewDepartments() 
+  prompt(newEmployee )
+      .then(({first_name, last_name}) => {
+        viewDepartments()
+        this.first_name = first_name
+        this.last_name = last_name
+        console.log(first_name)
+        console.log(last_name)
+        })
+    .catch(err => console.log(err))
+        }
   
-     prompt(newEmployee)
-     .then(({first_name, last_name}) => {
-       this.first_name = first_name
-       this.last_name = last_name
-      console.log(first_name)
-       console.log(last_name)
-     })
-    
-    .catch((err) => { console.log(err) })
- viewDepartments()
- rolesId()
-}
-  
- //   function resolveAfter2Seconds() {
-//   return new Promise(resolve => {
-//     setTimeout(() => {
-//       resolve('resolved');
-//     }, 1000);
-//   });
-// }
-//   async function managerId() {
-//     const result = resolveAfter2Seconds()
-//     console.log(result)
-//   }
-
-//   function managerId() {
-//     return manager_id
-//   }
-
 const contCheck = () => {
   prompt({
     type: 'confirm',
@@ -345,22 +282,5 @@ const contCheck = () => {
     .catch(err => console.log(err))
 }
 
-const getManager = () => {
-  getRoles()
-    .then(roles => {
-      console.table(roles)
-      prompt({
-        type: 'list',
-        name: 'managerName',
-        message: 'Employee\'s role : ',
-        choices: roles.map(roles => ({
-          name: roles.title,
-          value: roles.id
-        }))
-      })
-      contCheck()
-    })
-    .catch((err) => { console.log(err) })
-}
 starter()
 

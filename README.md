@@ -14,8 +14,7 @@
 2. npm i 
 3. node app.js
 ## Tests
-✏️ 
-Terminal Demo 
+✏️ Terminal Demo 
 ![employeeTracker.gif](assets/employeeTracker.gif)
 ## Questions
 ✋ 

@@ -1,4 +1,3 @@
-
 const { prompt } = require('inquirer')
 const mysql = require('mysql2')
 const express = require('express')
@@ -6,6 +5,16 @@ const { join } = require('path')
 const db = require('./db')
 
 require('console.table')
+
+const contCheck = () => {
+  prompt({
+    type: 'confirm',
+    name: 'choice',
+    message: 'Would you like to continue?'
+  })
+    .then(({ choice }) => choice ? starter() : process.exit())
+    .catch(err => console.log(err))
+}
 
 const newEmployee = [
   {
@@ -17,6 +26,31 @@ const newEmployee = [
     type: 'input',
     name: 'last_name',
     message: 'Last Name : '
+  },
+  {
+    type: 'input',
+    name: 'roles_id',
+    message: `
+    Enter role number: 
+    1. Sales Lead 
+    2. Salesman
+    3. Accountant
+    4. Lead Engineer
+    5. Software Engineer
+    6. Legal Team Lead
+    7. Lawyer
+     `
+  },
+  {
+    type: 'input',
+    name: 'manager_id',
+    message: `
+    Enter Manager Number :
+    1. Joc Pederson
+    2. Kobe Bryant
+    3. Doc Brown
+    4. Abraham Lincoln
+    `
   }
 ]
 
@@ -44,11 +78,13 @@ const starter = () => {
           employeesDepartment()
           break
         case 'Update Employee Role':
+          updateRole()
           break
         case 'View Roles':
           viewRoles()
           break
-          case 'Add Role':
+        case 'Add Role':
+          addRole()
           break
         case 'EXIT':
           process.exit()
@@ -57,36 +93,9 @@ const starter = () => {
     .catch(err => console.log(err))
 }
 
-async function getDepartments() {
-  const response = await new Promise((resolve, reject) => {
-    db.query('SELECT * FROM department', (err, department) => {
-      if (err) { reject(err) }
-      resolve(department)
-    })
-  })
-  return response
-}
-async function getRoles() {
-  const response = await new Promise((resolve, reject) => {
-    db.query('SELECT * FROM roles', (err, roles) => {
-      if (err) { reject(err) }
-      resolve(roles)
-    })
-  })
-  return response
-}
-async function getEmployee() {
-  const response = await new Promise((resolve, reject) => {
-    db.query('SELECT employees.id, employees.first_name, employees.last_name, roles.title, department.department, roles.salary FROM employees INNER JOIN roles ON roles_id = roles.id INNER JOIN department ON department.id = manager_id  ', (err, employees, roles, department) => {
-      if (err) { reject(err) }
-      resolve(employees, roles, department)
-    })
-  })
-  return response
-}
 async function getEmployees() {
   const response = await new Promise((resolve, reject) => {
-    db.query('SELECT employees.id, employees.first_name, employees.last_name, roles.title, department.department, roles.salary FROM employees INNER JOIN roles ON roles_id = roles.id INNER JOIN department ON department.id = manager_id  ', (err, employees, roles, department) => {
+    db.query('SELECT employees.id, employees.first_name, employees.last_name, roles.title, department.department, roles.salary FROM employees INNER JOIN roles ON roles.id = roles_id INNER JOIN department ON department.id = manager_id  ', (err, employees, roles, department) => {
       if (err) { reject(err) }
       resolve(employees, roles, department)
     })
@@ -103,45 +112,60 @@ async function employeeDepartment() {
   return response
 }
 
-async function addEmployee () {
-    const response = await new Promise((resolve, reject) => {
-    db.query('INSERT INTO employees (employees.first_name, employees.last_name, employees.roles_id, employees.manager_id)', (err, employees) => {
+async function getRoles() {
+  const response = await new Promise((resolve, reject) => {
+    db.query('SELECT roles.title, roles.salary FROM roles', (err, roles) => {
       if (err) { reject(err) }
-      resolve(employees)
-
-    db.query('SELECT employees.id, employees.first_name, employees.last_name, roles.title, department.department, roles.salary, department.manager FROM employees INNER JOIN roles ON roles_id = roles.id INNER JOIN department ON manager.id = department.id ', (err, employees, roles, department) => {
-      if (err) { reject(err) }
-      resolve(employees, roles, department)
+      resolve(roles)
     })
   })
-})
   return response
 }
-// async function addRole() {
-//   const response = await new Promise((resolve, reject) => {
-//     db.query(`INSERT INTO roles SET ?`, data, (err, fields) => {
-//       if (err) { reject(err) }
-//       db.query(`SELECT * FROM roles WHERE ?`, { id: fields.insertId }, (err, newData) => {
-//         if (err) { reject(err) }
-//         resolve(newData[0])
-//       })
-//     })
-//   })
-//   return response
-// }
-// async function addDepartment() {
-//   const response = await new Promise((resolve, reject) => {
-//     db.query(`INSERT INTO department  SET ?`, data, (err, fields) => {
-//       if (err) { reject(err) }
-//       db.query(`SELECT * FROM department WHERE ?`, { id: fields.insertId }, (err, newData) => {
-//         if (err) { reject(err) }
-//         resolve(newData[0])
-//       })
-//     })
-//   })
-//   return response
-// Error Code: 1452. Cannot add or update a child row: a foreign key constraint fails(`employeetracker_db`.`employees`, CONSTRAINT`employees_ibfk_1` FOREIGN KEY(`roles_id`) REFERENCES`roles`(`id`))
-// }
+
+const viewEmployees = () => {
+  getEmployees()
+    .then(employee => {
+      console.table(employee)
+      contCheck()
+    })
+    .catch(err => console.log(err))
+
+}
+
+const createEmployee = () => {
+  prompt(newEmployee)
+  .then(newEmployee => {
+    db.query('INSERT INTO employees SET ?', newEmployee, err => {
+      if(err){ console.log(err) }
+      console.log('Employee Created')
+      contCheck( )
+    })
+  })
+  .catch(err => console.log(err))
+}
+
+const deleteEmployees = () => {
+  getEmployees()
+  .then(employees => {
+    prompt({
+      type: 'list',
+      name: 'id',
+      message: 'Choose an employee',
+      choices: employees.map(employee => ({
+        name: employee.first_name,
+        value: employee.id
+      }))
+    })
+    .then(id => {
+      db.query('DELETE FROM employees WHERE ?', id, err => {
+        if (err) { console.log(err) }
+        console.log('Employee deleted!')
+        contCheck()
+      })
+    })
+  })
+  .catch(err => console.log(err))
+}
 
 const employeesDepartment = () => {
   employeeDepartment()
@@ -152,6 +176,49 @@ const employeesDepartment = () => {
     .catch(err => console.log(err))
   }
 
+const updateRole = () => {
+  getEmployees()
+  .then(employees => {
+    console.table(employees)
+    prompt({
+      type: 'list',
+      name: 'id',
+      message: 'Choose an employee',
+      choices: employees.map(employee => ({
+        name: employee.first_name,
+        value: employee.id
+      }))
+    })
+        .then(({ id }) => {
+          prompt({
+            type: 'number',
+            name: 'roles_id',
+            message: `
+            Enter role number: 
+                1. Sales Lead 
+                2. Salesman
+                3. Accountant
+                4. Lead Engineer
+                5. Software Engineer
+                6. Legal Team Lead
+                7. Lawyer
+            `
+          })
+          .then(({  roles_id }) => {
+           const condition = [{id}, {roles_id}]
+            db.query('UPDATE employees SET ? WHERE ?',  condition, err => {
+              if (err) { console.log(err) }
+              console.log('Role Updated')
+              contCheck()
+            })
+          })
+            .catch(err => console.log(err))
+        })
+      .catch(err => console.log(err))
+  })
+  .catch(err => console.log(err))
+}
+
 const viewRoles = () => {
   getRoles()
     .then(roles => {
@@ -161,126 +228,41 @@ const viewRoles = () => {
     .catch(err => console.log(err))
 }
 
-const deleteEmployees = () => {
-  getEmployee()
-    .then(employees => {
-      prompt({
-        type: 'list',
-        name: 'employees_id',
-        message: 'Remove Employee : ',
-        choices: employees.map(employees => ({
-          name: employees.first_name,
-          value: employees.id
-        }))
-      })
-        .then(({ employees_id }) => {
-          this.employees_id = employees_id
-          console.log(employees_id)
-          contCheck()
-        })
-        .catch(err => console.log(err))
+const addRole = ( ) => {
+  getRoles( )
+  .then(role => {
+    prompt([
+      {
+      type: 'input',
+      name: 'title',
+      message: `Add a New Role : `
+    },
+    {
+      type: 'number',
+      name: 'salary',
+      message: 'Salary Amount : '
+    },
+    {
+      type: 'number',
+      name: 'department_id',
+      message: `
+      Enter a Department Number : 
+      1. Sales
+      2. Finance
+      3. Engineering
+      4. Legal
+      `
+    }
+  ])
+  .then(role => {
+    db.query('INSERT INTO roles SET ?', role, err => {
+      if (err) { console.log(err) }
+      console.log('Role Created')
+      contCheck()
     })
-    .catch(err => console.log(err))
-  }
-
-const viewEmployees = () => {
-  getEmployees()
-  .then(department => {
-    console.table(department)
-    contCheck()
   })
-    .catch(err => console.log(err))
- 
-}
-const managerId = () => {
-  getDepartments()
-    .then(department => {
-      console.table(department)
-      prompt({
-        type: 'list',
-        name: 'manager_id',
-        message: 'Who is the Employee\'s manager ?',
-        choices: department.map(department => ({
-          name: department.manager,
-          value: department.id
-        }))
-      })
-        .then(({ manager_id }) => {
-          this.manager_id = manager_id
-          console.log(manager_id)
-          return manager_id
-        })
-        .catch(err => console.log(err))
-      })
-    .catch(err => console.log(err))
-}
-const viewDepartments = () => {
-  getEmployee()
-  .then(employees => {
-    prompt({
-      type: 'list',
-      name: 'employees_id',
-      message: 'Who is the Employee\'s manager ?',
-      choices: employees.map(employees => ({
-         name: employees.first_name,
-          value: employees.id
-        }))
-      })
-      .then(({ employees_id  }) => {
-         this.employees_id = employees_id
-          console.log(employees_id )
-          rolesId()
-        })
-        .catch(err => console.log(err))
-        })
-        .catch(err => console.log(err))
-      }
-
-const rolesId = () => {
-  getRoles()
-    .then(roles => {
-      console.table(roles)
-      prompt({
-        type: 'list',
-        name: 'roles_id',
-        message: 'Employee\'s role : ',
-        choices: roles.map(roles => ({
-          name: roles.title,
-          value: roles.id
-        }))
-      })
-        .then(({ roles_id }) => {
-          this.roles_id = roles_id
-          console.log(roles_id)
-          contCheck()
-          return roles_id
-        })
-        .catch(err => console.log(err))
-    })
-    .catch(err => console.log(err))
-}
-
-const createEmployee = () => {
-  prompt(newEmployee )
-      .then(({first_name, last_name}) => {
-        viewDepartments()
-        this.first_name = first_name
-        this.last_name = last_name
-        console.log(first_name)
-        console.log(last_name)
-        })
-    .catch(err => console.log(err))
-        }
-  
-const contCheck = () => {
-  prompt({
-    type: 'confirm',
-    name: 'choice',
-    message: 'Would you like to continue?'
   })
-    .then(({ choice }) => choice ? starter() : process.exit())
-    .catch(err => console.log(err))
 }
+    
 
-starter()
-
+starter( )
